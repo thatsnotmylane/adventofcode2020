@@ -7,53 +7,6 @@ using System.Threading;
 
 namespace adventofcode
 {
-    public static class Extensions
-    {
-        public static char[,] FileToMatrix(this IEnumerable<string> Source, bool Debug = false)
-        {
-            if (Source == null || Source.Count() == 0)
-            {
-                return null;
-            }
-            var height = Source.Count();
-            var width = Source.OrderByDescending(x => x.Length).Select(x => x.Length).First();
-            if (Debug == true)
-            {
-                Console.WriteLine($"H: {height} W: {width}");
-            }
-            var matrix_result = new char[height, width];
-            var row = 0;
-            foreach (var line in Source)
-            {
-                var col = 0;
-                foreach (var letter in line)
-                {
-                    matrix_result[row, col] = letter;
-                    col++;
-                }
-                row++;
-            }
-            matrix_result.DebugMatrix(Debug);
-            return matrix_result;
-        }
-
-        public static void DebugMatrix(this char[,] Source, bool Debug = false)
-        {
-            if (Debug == true)
-            {
-                for (int i = 0; i < Source.GetLength(0); i++)
-                {
-                    for (int j = 0; j < Source.GetLength(1); j++)
-                    {
-                        Console.Write(Source[i, j]);
-                    }
-                    Console.WriteLine();
-                }
-            }
-        }
-    }
-
-
     class Program
     {
         static void Main(string[] args)
@@ -83,7 +36,7 @@ namespace adventofcode
                         DayOne();
                         break;
                     case "2":
-                        DayTwo();
+                        DayTwo(debug);
                         break;
                     case "3":
                         DayThree(debug);
@@ -158,7 +111,7 @@ namespace adventofcode
             return tree_count;
         }
 
-        public static void DayTwo()
+        public static void DayTwo(bool Debug)
         {
             var file = new StreamReader(@"C:\Users\thats\source\repos\adventofcode2020\day2input.txt");
             var rx = new Regex("([0-9]*)[-]([0-9]*) ([a-z])[:] ([a-z]*)");
@@ -187,6 +140,7 @@ namespace adventofcode
                     char.TryParse(groups[3].Value, out letter);
                     var password = groups[4].Value;
 
+                    Console.WriteLine($"Min {min_occ}\tMax {max_occ}\t Letter: {letter}   Password: {password}");
 
                     var occurrances = password.Count(x => letter == x);
                     if(occurrances < min_occ)
