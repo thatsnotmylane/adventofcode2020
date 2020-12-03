@@ -3,26 +3,81 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace adventofcode
 {
+    public static class Extensions
+    {
+        public static char[,] FileToMatrix(this IEnumerable<string> Source, bool Debug = false)
+        {
+            if (Source == null || Source.Count() == 0)
+            {
+                return null;
+            }
+            var height = Source.Count();
+            var width = Source.OrderByDescending(x => x.Length).Select(x => x.Length).First();
+            if (Debug == true)
+            {
+                Console.WriteLine($"H: {height} W: {width}");
+            }
+            var matrix_result = new char[height, width];
+            var row = 0;
+            foreach (var line in Source)
+            {
+                var col = 0;
+                foreach (var letter in line)
+                {
+                    matrix_result[row, col] = letter;
+                    col++;
+                }
+                row++;
+            }
+            matrix_result.DebugMatrix(Debug);
+            return matrix_result;
+        }
+
+        public static void DebugMatrix(this char[,] Source, bool Debug = false)
+        {
+            if (Debug == true)
+            {
+                for (int i = 0; i < Source.GetLength(0); i++)
+                {
+                    for (int j = 0; j < Source.GetLength(1); j++)
+                    {
+                        Console.Write(Source[i, j]);
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
+    }
+
+
     class Program
     {
         static void Main(string[] args)
         {
-            // C:\Users\thats\source\repos\adventofcode
-            Console.WriteLine("Hello World!");
-            DayThree();
+            Console.WriteLine("Hello Advent of Code");
+            
+            var debug = false;
+            DayThree(debug);
 
-            var looper = true;
-            while (looper)
+            var cki = new ConsoleKeyInfo();
+
+            do
             {
-                var day_select = Console.ReadLine();
-
+                while (Console.KeyAvailable == false)
+                {
+                    Thread.Sleep(250);
+                }
+                cki = Console.ReadKey(true);
+                var day_select = cki.KeyChar.ToString();
                 switch (day_select)
                 {
-                    case "q":
-                        looper = false;
+                    case "d":
+                        debug = debug == true ? false : true;
+                        Console.WriteLine(debug == true ? "Debug On" : "Debug Off");
                         break;
                     case "1":
                         DayOne();
@@ -31,72 +86,51 @@ namespace adventofcode
                         DayTwo();
                         break;
                     case "3":
-                        DayThree();
+                        DayThree(debug);
                         break;
                     default:
-                        Console.WriteLine("Invalid Input");
+                    case "?":
+                        Console.WriteLine($"Usage: ");
+
+                        Console.WriteLine("d - Toggle Debug Mode");
+                        Console.WriteLine("q - Quit");
+                        Console.WriteLine("1, 2, 3... etc - Run the Solution for that day");
                         break;
                 }
             }
+            while (cki.Key != ConsoleKey.Q);
         }
 
-        public static void DayThree()
+        
+
+        public static void DayThree(bool Debug)
         {
-            var file = new StreamReader(@"C:\Users\thats\source\repos\adventofcode2020\day3input.txt");
-            var tree_land = new List<List<char>>();
+            Console.WriteLine();
+            Console.WriteLine("-*- Day Three -*-");
+            Console.WriteLine();
+            var path_3 = @"C:\Users\thats\source\repos\adventofcode2020\day3input.txt";
 
-            while(file.Peek() >= 0)
-            {
-                tree_land.Add(file.ReadLine().ToCharArray().ToList());
-            }
+            var matrix = File.ReadLines(path_3)
+                .FileToMatrix(Debug);
 
-            //foreach (var line in tree_land)
-            //{
-            //    Console.WriteLine(new string(line.ToArray()));
-            //}
-
-            Console.WriteLine(" ");
-            Console.WriteLine("-------------------------------");
-            Console.WriteLine(" ");
-
-            var width = tree_land.First().Count;
-            var height = tree_land.Count;
-            var tree_matrix = new char[height, width];
-            var row_iter = 0;
-
-            foreach (var row in tree_land)
-            {
-                var col_itter = 0;
-                foreach (var letter in row)
-                {
-                    tree_matrix[row_iter, col_itter] = letter;
-                    col_itter++;
-                }
-                row_iter++;
-            }
-
-
-            //for (int i = 0; i < tree_matrix.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < tree_matrix.GetLength(1); j++)
-            //    {
-            //        Console.Write(tree_matrix[i, j]);
-            //    }
-            //    Console.WriteLine();
-            //}
+            Console.WriteLine($"Part One Answer - {ArborealTraverser(matrix, 3, 1)}");
 
             long part_two_answer = 1;
-            part_two_answer = part_two_answer * ArborealTraverser(tree_matrix, 1, 1, height, width);
-            part_two_answer = part_two_answer * ArborealTraverser(tree_matrix, 3, 1, height, width);
-            part_two_answer = part_two_answer * ArborealTraverser(tree_matrix, 5, 1, height, width);
-            part_two_answer = part_two_answer * ArborealTraverser(tree_matrix, 7, 1, height, width);
-            part_two_answer = part_two_answer * ArborealTraverser(tree_matrix, 1, 2, height, width);
+            part_two_answer = part_two_answer * ArborealTraverser(matrix, 1, 1);
+            part_two_answer = part_two_answer * ArborealTraverser(matrix, 3, 1);
+            part_two_answer = part_two_answer * ArborealTraverser(matrix, 5, 1);
+            part_two_answer = part_two_answer * ArborealTraverser(matrix, 7, 1);
+            part_two_answer = part_two_answer * ArborealTraverser(matrix, 1, 2);
 
             Console.WriteLine($"Part Two Answer - {part_two_answer}");
+            // Part One Answer - 292
+            // Part Two Answer - 9354744432
         }
 
-        public static int ArborealTraverser(char[,] Matrix, int RightSteps, int DownSteps, int Height, int Width)
+        public static int ArborealTraverser(char[,] Matrix, int RightSteps, int DownSteps)
         {
+            var Height = Matrix.GetLength(0);
+            var Width = Matrix.GetLength(1);
             var tree_count = 0;
             var open_count = 0;
             var col_keeper = RightSteps;
