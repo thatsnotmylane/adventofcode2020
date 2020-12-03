@@ -1,3 +1,6 @@
-adventofcode/bin
-adventofcode/obj
+adventofcode/bin/
+adventofcode/bin/*
+adventofcode/obj/
+adventofcode/obj/*
 .vs
+.vs/*
