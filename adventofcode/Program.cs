@@ -30,6 +30,9 @@ namespace adventofcode
                     case "2":
                         DayTwo();
                         break;
+                    case "3":
+                        DayThree();
+                        break;
                     default:
                         Console.WriteLine("Invalid Input");
                         break;
