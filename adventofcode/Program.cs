@@ -13,8 +13,8 @@ namespace adventofcode
         {
             Console.WriteLine("Hello Advent of Code");
             
-            var debug = false;
-            DayThree(debug);
+            var debug = true;
+            DayFour(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -41,6 +41,9 @@ namespace adventofcode
                     case "3":
                         DayThree(debug);
                         break;
+                    case "4":
+                        DayFour(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -54,7 +57,180 @@ namespace adventofcode
             while (cki.Key != ConsoleKey.Q);
         }
 
-        
+        public static void DayFour(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("1100101 Day Four 1100101");
+            Console.WriteLine();
+            var path_4 = @"C:\Users\thats\source\repos\adventofcode2020\day4input.txt";
+
+            var passports = new List<Passport>();
+
+
+            var regex_dict = Passport.PartOneRegex;
+            var i = 0;
+            var working_passport = new Passport(regex_dict);
+            foreach(var line in File.ReadLines(path_4))
+            {
+                if(line == string.Empty)
+                {
+                    passports.Add(working_passport);
+                    working_passport = new Passport(regex_dict);
+                    if (Debug == true)
+                    {
+                    }
+                }
+                else
+                {
+                    working_passport.ParseLine(line);
+                }
+                i++;
+            }
+            passports.Add(working_passport);
+
+            Console.WriteLine($"Part One Answer - {passports.Where(x => x.IsValidPartOne()).Count()}"); // 228
+            Console.WriteLine($"Part Two Answer - {passports.Where(x => x.IsValidPartTwo()).Count()}"); // 175
+        }
+
+        public class Passport
+        {
+            public Passport(Dictionary<string, Regex> RegexesToUse)
+            {
+                Regexes = RegexesToUse;
+            }
+
+            public static Dictionary<string, Regex> PartOneRegex
+            {
+                get
+                {
+                    var result = new Dictionary<string, Regex>();
+                    foreach (var prop in typeof(Passport).GetProperties().Where(x => x.PropertyType == typeof(string)))
+                    {
+                        result.Add(prop.Name, new Regex($"{prop.Name}[:]([^ ]*)"));
+                    }
+                    return result;
+                }
+            }
+
+            public bool IsValidPartTwo()
+            {
+                var valid = byr.Length == 4  && int.TryParse(byr, out var byr_int) && 1920 <= byr_int && byr_int <= 2002;
+                if (valid == true)
+                {
+                    valid = iyr.Length == 4 &&  int.TryParse(iyr, out var iyr_int) && 2010 <= iyr_int && iyr_int <= 2020;
+                }
+
+                if (valid == true)
+                {
+                    valid = eyr.Length == 4 && int.TryParse(eyr, out var eyr_int) && 2020 <= eyr_int && eyr_int <= 2030;
+                }
+
+                if (valid == true)
+                {
+                    if (hgt.Contains("cm"))
+                    {
+                        valid = int.TryParse(hgt.Substring(0, hgt.Length - 2), out var hgt_int) == true && 150 <= hgt_int && hgt_int <= 193;
+                    }
+                    else if (hgt.Contains("in"))
+                    {
+                        valid = int.TryParse(hgt.Substring(0, hgt.Length - 2), out var hgt_int) == true && 59 <= hgt_int && hgt_int <= 76;
+                    }
+                    else
+                    {
+                        valid = false;
+                    }
+                }
+
+                if(valid == true)
+                {
+                    var hair_regex = new Regex("[#][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]");
+                    valid = hcl.Length == 7 && hair_regex.Match(hcl).Success;
+                }
+                
+                if(valid == true)
+                {
+                    valid = ecl.Length == 3 && ecl.Contains("amb") || ecl.Contains("blu") || ecl.Contains("brn") || ecl.Contains("gry") || ecl.Contains("grn") || ecl.Contains("hzl") || ecl.Contains("oth");
+                }
+
+                if(valid == true)
+                {
+                    var pid_int = 0;
+                    valid = pid.Length == 9 && int.TryParse(pid, out pid_int);
+                }
+                
+                // 175
+
+                return valid;
+            }
+
+            public bool IsValidPartOne()
+            {
+                if(string.IsNullOrEmpty(byr) == false &&
+                   string.IsNullOrEmpty(iyr) == false &&
+                   string.IsNullOrEmpty(eyr) == false &&
+                   string.IsNullOrEmpty(hgt) == false &&
+                   string.IsNullOrEmpty(hcl) == false &&
+                   string.IsNullOrEmpty(ecl) == false &&
+                   string.IsNullOrEmpty(pid) == false 
+                   )
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            private Dictionary<string, Regex> Regexes
+            { get; set; } = new Dictionary<string, Regex>();
+
+            public void ParseLine(string Line)
+            {
+                foreach (var regex in Regexes)
+                {
+                    var matches = regex.Value.Match(Line);
+                    if (matches.Success == true)
+                    {
+                        this.GetType().GetProperty(regex.Key).SetValue(this, matches.Groups[1].Value);
+                    }
+                }
+            }
+
+            public string byr
+            { get; set; } = "";
+
+            public string iyr
+            { get; set; } = "";
+
+            public string eyr
+            { get; set; } = "";
+
+            public string hgt
+            { get; set; } = "";
+
+            public string hcl
+            { get; set; } = "";
+
+            public string ecl
+            { get; set; } = "";
+
+            public string pid
+            { get; set; } = "";
+
+            public string cid
+            { get; set; } = "";
+
+            /*
+             
+    byr (Birth Year)
+    iyr (Issue Year)
+    eyr (Expiration Year)
+    hgt (Height)
+    hcl (Hair Color)
+    ecl (Eye Color)
+    pid (Passport ID)
+    cid (Country ID)
+
+             */
+        }
 
         public static void DayThree(bool Debug)
         {
