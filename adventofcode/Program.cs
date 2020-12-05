@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DayFour(debug);
+            DayFive(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -44,6 +44,9 @@ namespace adventofcode
                     case "4":
                         DayFour(debug);
                         break;
+                    case "5":
+                        DayFive(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -55,6 +58,114 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DayFive(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-FFFRRR- Day Five -RRRFFF-");
+            Console.WriteLine();
+            var path_5 = @"C:\Users\thats\source\repos\adventofcode2020\day5input.txt";
+            //var path_5 = @"C:\Users\thats\source\repos\adventofcode2020\day5input-part1test.txt";
+
+            var seats = File.ReadLines(path_5);
+            var plane_row_size = 128; // 0 - 127
+            var plane_col_size = 8;
+            var seat_list = new List<Seat>();
+
+            foreach (var ticket in seats)
+            {
+                var seat = RecursiveSeatFinder(0, plane_row_size - 1, 0, plane_col_size - 1, ticket, 0);
+                seat_list.Add(seat);
+
+                if (Debug == true)
+                {
+                    Console.WriteLine($"Input: {seat.BinarySpacePartition}, Row: {seat.Row} Col: {seat.Column} SeatID: {seat.SeatID}");
+                }
+                    
+            }
+
+            var part_two_answer = seat_list.Where(x => x.SeatID + 2 == x.SeatID).Select(x => x.SeatID + 1);
+
+            var seats_no_firstlast = seat_list.Where(x => x.Row != 0 && x.Row != plane_row_size - 1);
+
+            Console.WriteLine($"Part One Answer - {seat_list.Select(x => x.SeatID).Max()}"); //  922
+
+            
+            //foreach(var seat in seat_list.OrderBy(x => x.SeatID))
+            //{
+            //    Console.WriteLine($"Input: {seat.BinarySpacePartition}, Row: {seat.Row} Col: {seat.Column} SeatID: {seat.SeatID}");
+            //}
+            //Console.WriteLine($"Number of Seats: {seat_list.Count}");
+
+
+
+            foreach (var i in seats_no_firstlast)
+            {
+                if(seats_no_firstlast.Select(x => x.SeatID).Contains(i.SeatID + 1) == false)
+                {
+                    if(seats_no_firstlast.Select(x => x.SeatID).Contains(i.SeatID + 2) == true)
+                    {
+                        Console.WriteLine($"Part Two Answer - {i.SeatID + 1}"); // 747
+                    }
+                }
+            }
+
+
+            
+
+        }
+
+        public static Seat RecursiveSeatFinder(int FirstRowIndex, int LastRowIndex, int FirstColumnIndex, int LastColumnIndex, string Input, int ArrayPosition)
+        {
+            var row_midpoint = LastRowIndex - ((LastRowIndex - FirstRowIndex) / 2);
+            var col_midpoint = LastColumnIndex - ((LastColumnIndex - FirstColumnIndex) / 2);
+            if (ArrayPosition == Input.Length)
+            {
+                return new Seat()
+                {
+                    BinarySpacePartition = Input,
+                    Row = FirstRowIndex,
+                    Column = FirstColumnIndex,
+                };
+            }
+            else if(Input[ArrayPosition] == 'F')
+            {
+                return RecursiveSeatFinder(FirstRowIndex, row_midpoint, FirstColumnIndex, LastColumnIndex, Input, ArrayPosition + 1);
+            }
+            else if(Input[ArrayPosition] == 'B')
+            {
+                return RecursiveSeatFinder(row_midpoint, LastRowIndex, FirstColumnIndex, LastColumnIndex, Input, ArrayPosition + 1);
+            }
+            else if (Input[ArrayPosition] == 'R')
+            {
+                return RecursiveSeatFinder(FirstRowIndex, LastRowIndex, col_midpoint, LastColumnIndex, Input, ArrayPosition + 1);
+            }
+            else if(Input[ArrayPosition] == 'L')
+            {
+                return RecursiveSeatFinder(FirstRowIndex, LastRowIndex, FirstColumnIndex, col_midpoint, Input, ArrayPosition + 1);
+            }
+            return null;
+        }
+
+        public class Seat
+        {
+            public string BinarySpacePartition
+            { get; set; }
+
+            public int Row
+            { get; set; }
+
+            public int Column
+            { get; set; }
+
+            public int SeatID
+            { 
+                get
+                {
+                    return (Row * 8) + Column;
+                }
+            }
         }
 
         public static void DayFour(bool Debug)
