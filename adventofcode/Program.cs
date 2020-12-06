@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DayFive(debug);
+            DaySix(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -47,6 +47,9 @@ namespace adventofcode
                     case "5":
                         DayFive(debug);
                         break;
+                    case "6":
+                        DaySix(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -58,6 +61,63 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DaySix(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-aaaabbbb- Day Six -bbbbaaaa-");
+            Console.WriteLine();
+            var path_6 = @"C:\Users\thats\source\repos\adventofcode2020\day6input.txt";
+            //var path_5 = @"C:\Users\thats\source\repos\adventofcode2020\day5input-part1test.txt";
+
+            var partone_answers = new List<string>();
+            var parttwo_answers = new List<List<string>>();
+
+            var pass_group_partone = "";
+            var pass_group_parttwo = new List<string>();
+            foreach (var line in File.ReadLines(path_6))
+            {
+                
+                if (line == string.Empty)
+                {
+                    partone_answers.Add(pass_group_partone);
+                    pass_group_partone = "";
+
+                    parttwo_answers.Add(pass_group_parttwo);
+                    pass_group_parttwo = new List<string>();
+                }
+                else
+                {
+                    pass_group_partone += line;
+                    pass_group_parttwo.Add(line);
+                }
+                
+            }
+
+            foreach(var group in partone_answers)
+            {
+                Console.WriteLine(group);
+            }
+
+            Console.WriteLine($"Part One Answer - {partone_answers.Select(x => x.Distinct().Count()).Sum()}");
+            var pt_two_count = 0;
+            foreach(var group in parttwo_answers)
+            {
+                var ans_count = 0;
+                var group_size = group.Count;
+                var all_chars = group.SelectMany(x => x.Select(y => y));
+                foreach(var letter in all_chars.Distinct())
+                {
+                    if(all_chars.Where(x => x == letter).Count() == group_size)
+                    {
+                        ans_count ++;
+                    }
+                }
+                pt_two_count += ans_count;
+            }
+            Console.WriteLine($"Part Two Answer - {pt_two_count}");
+
         }
 
         public static void DayFive(bool Debug)
