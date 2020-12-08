@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DaySix(debug);
+            DaySeven(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -50,6 +50,9 @@ namespace adventofcode
                     case "6":
                         DaySix(debug);
                         break;
+                    case "7":
+                        DaySeven(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -61,6 +64,128 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DaySeven(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-7777777- Day Seven -7777777-");
+            Console.WriteLine();
+            var path_7 = @"C:\Users\thats\source\repos\adventofcode2020\day7input.txt";
+            //var path_7 = @"C:\Users\thats\source\repos\adventofcode2020\day7input-part1test.txt";
+            var number_regex = new Regex("[0-9]*");
+
+            var bags = new List<BagClass>();
+
+            foreach (var line in File.ReadLines(path_7))
+            {
+                var contains_string = line.Split(" bags contain ")[1];
+                var contains_list = contains_string.Split(",").ToList();
+
+                var this_bag = new BagClass()
+                {
+                    BagType = line.Split(" bags contain ")[0],
+                    ContainedBags = contains_list.Select(x => 
+                    {
+                        var santitized = x.Replace(".", "").Replace("bags", "").Replace("bag", "").Trim();
+                        var amount_match = number_regex.Match(santitized);
+                        return new BagClass()
+                        {
+                            Amount = amount_match.Success == true && amount_match.Length > 0 ? Convert.ToInt32(amount_match.Value) : 0,
+                            BagType = santitized == "no other" ? santitized : santitized.Substring(2, santitized.Length - 2),
+                        };
+                    }).ToList()
+                };
+
+                bags.Add(this_bag);
+            }
+
+            var bags_with_shiny = bags.Where(x => x.ContainedBags.Where(y => y.BagType == "shiny gold").Count() > 0).Select(x => x.BagType).ToList();
+
+            var count = 0;
+            foreach (var bag in bags)
+            {
+                count += ItsJustBagsAllTheWayDown(bags, bag);
+            }
+
+            Console.WriteLine($"Part One Answer - {count}");
+
+            var shiny_gold = bags.Where(x => x.BagType == "shiny gold").FirstOrDefault();
+
+            var shiny_gold_count = shiny_gold.ContainedBags.Select(x => x.Amount).Sum();
+            Console.WriteLine($"shiney gold count: {shiny_gold_count}");
+            Console.WriteLine($"Part Two Answer - {DeepCount(bags, shiny_gold)}");
+
+        }
+
+        public static int BagCount(BagClass InputBag)
+        {
+            return InputBag.ContainedBags.Select(x => x.Amount).Sum();
+        }
+
+        public static int DeepCount(List<BagClass> AllBags, BagClass InputBag)
+        {
+            var ret_val = BagCount(InputBag);
+            foreach (var bag in InputBag.ContainedBags)
+            {
+                for (var i = 1; i <= bag.Amount; i++)
+                {
+                    ret_val += DeepCount(AllBags, new BagClass()
+                    {
+                        BagType = bag.BagType,
+                        ContainedBags = AllBags.Where(x => x.BagType == bag.BagType).SelectMany(s => s.ContainedBags).ToList()
+                    });
+                }
+            }
+            return ret_val;
+        }
+
+        public static int ItsJustBagsAllTheWayDown(List<BagClass> Bags, BagClass InputBag)
+        {
+            var next_bags = InputBag.ContainedBags;// != null ? InputBag.ContainedBags : Bags.Where(x => x.BagType == InputBag.BagType).SelectMany(s => s.ContainedBags).ToList();
+
+            if (next_bags.Select(x => x.BagType).Contains("shiny gold"))
+            {
+                return 1;
+            }
+            else if (next_bags.Count == 1 && next_bags.Select(x => x.BagType).FirstOrDefault() == "no other")
+            {
+                return 0;
+            }
+            else
+            {
+                var ret_val = 0;
+                foreach (var bag in next_bags)
+                {
+                    ret_val +=  ItsJustBagsAllTheWayDown(Bags, new BagClass()
+                    {
+                        BagType = bag.BagType,
+                        ContainedBags = Bags.Where(x => x.BagType == bag.BagType).SelectMany(s => s.ContainedBags).ToList(),
+                    });
+                }
+                if(ret_val > 0)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            return -1;
+        }
+
+        public class BagClass
+        {
+            public string BagType
+            { get; set; }
+
+            public int Amount
+            { get; set; }
+
+            public List<BagClass> ContainedBags
+            { get; set; }
+
         }
 
         public static void DaySix(bool Debug)
