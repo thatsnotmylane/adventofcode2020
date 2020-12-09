@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DayEight(debug);
+            DayNine(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -56,6 +56,9 @@ namespace adventofcode
                     case "8":
                         DayEight(debug);
                         break;
+                    case "9":
+                        DayNine(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -67,6 +70,54 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DayNine(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-X M A S- Day Nine -S A M X-");
+            Console.WriteLine();
+            var path_9 = @"C:\Users\thats\source\repos\adventofcode2020\day9input.txt";
+            //var path_9 = @"C:\Users\thats\source\repos\adventofcode2020\day9input-part1test.txt";
+
+            var input = new List<Int64>();
+            foreach(var lin in File.ReadAllLines(path_9))
+            {
+                input.Add(Convert.ToInt64(lin));
+            }
+
+            var preamble_size = 25; // 25
+
+            var part_one_invalid = (long)0;
+            var ii = preamble_size;
+            for(;ii < input.Count; ii++)
+            {
+                var next = input[ii];
+                var search_range = input.GetRange(ii - preamble_size, preamble_size);
+                if(search_range.NextIsValid(input[ii]))
+                {
+
+                }
+                else
+                {
+                    
+                    part_one_invalid = next;
+                }
+            }
+            Console.WriteLine($"Part One Answer - {part_one_invalid}"); // 1930745883
+
+            for(var jj = 0; jj < input.Count; jj++)
+            {
+                for (var kk = 0; kk < jj; kk++)
+                {
+                    var this_range = input.GetRange(kk, jj - kk);
+                    if (this_range.Count > 1 && this_range.Sum() == part_one_invalid)
+                    {
+                        Console.WriteLine($"Part Two Answer - {this_range.Min() + this_range.Max()} Math: {this_range.Sum()} Values: {String.Join(", ", this_range)}");
+                    }
+                }                
+            }
+            
         }
 
         public static void DayEight(bool Debug)
