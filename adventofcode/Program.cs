@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DaySeven(debug);
+            DayEight(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -53,6 +53,9 @@ namespace adventofcode
                     case "7":
                         DaySeven(debug);
                         break;
+                    case "8":
+                        DayEight(debug);
+                        break;
                     default:
                     case "?":
                         Console.WriteLine($"Usage: ");
@@ -64,6 +67,139 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DayEight(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-88888888- Day Eight -88888888-");
+            Console.WriteLine();
+            var path_8 = @"C:\Users\thats\source\repos\adventofcode2020\day8input.txt";
+            
+            var command_list = new List<GhettoAssemblyCommand>();
+
+            var ii = 0;
+            foreach(var line in File.ReadLines(path_8))
+            {
+                var groups = line.Split(' ');
+                
+                var amount = 0;
+                int.TryParse(groups[1].Substring(1, groups[1].Length-1), out amount);
+                var this_command = new GhettoAssemblyCommand()
+                {
+                    Command = groups[0],
+                    PlusOrMinus = groups[1].Substring(0, 1) == "+" ? true : false,
+                    Amount = amount,
+                    Visited = false,
+                    Index = ii,
+                };
+                command_list.Add(this_command);
+                ii++;
+
+                Console.WriteLine($"{this_command.Command} - {this_command.PlusOrMinus} {this_command.Amount} {this_command.Index}");
+            }
+
+            // Part One Answer -- 1134
+
+            var terminating_index = command_list.Count;
+
+
+            GhettoAssemblyCommand.RunTheGameboy(command_list.Select(a => new GhettoAssemblyCommand()
+            {
+                Amount = a.Amount,
+                Command = a.Command,
+                Index = a.Index,
+                PlusOrMinus = a.PlusOrMinus,
+                Visited = a.Visited,
+            }).ToList(), 1, null);
+
+            foreach(var uncorrupted in command_list.Where(x => x.Command != "acc"))
+            {
+                var list2 = command_list.Select(a => new GhettoAssemblyCommand()
+                {
+                    Amount = a.Amount,
+                    Command = a.Command,
+                    Index = a.Index,
+                    PlusOrMinus = a.PlusOrMinus,
+                    Visited = a.Visited,
+                }).ToList();
+
+                var this_uncor = list2.Where(x => x.Index == uncorrupted.Index).FirstOrDefault();
+                if(this_uncor.Command == "jmp")
+                {
+                    this_uncor.Command = "nop";
+                }
+                else
+                {
+                    this_uncor.Command = "jmp";
+                }
+                GhettoAssemblyCommand.RunTheGameboy(list2, 2, terminating_index);
+            }
+        }
+
+        public class GhettoAssemblyCommand
+        {
+            public static void RunTheGameboy(List<GhettoAssemblyCommand> command_list, int PuzzlePart, int? TerminatorIndex)
+            {
+                var accumulator = 0;
+                var repeat = false;
+                var iterator = 0;
+                while (repeat == false)
+                {
+                    var this_command = command_list.Where(x => x.Index == iterator).FirstOrDefault();
+                    if (iterator == TerminatorIndex)
+                    {
+                        Console.WriteLine($"Part Two Answer - {accumulator}");
+                    }
+                    else if (this_command.Visited == true)
+                    {
+                        repeat = true;
+                        if (PuzzlePart == 1)
+                        {
+                            Console.WriteLine($"Part One Answer - {accumulator}");
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                    }
+                    else
+                    {
+                        this_command.Visited = true;
+
+                        if (this_command.Command == "acc")
+                        {
+                            accumulator += this_command.PlusOrMinus == true ? this_command.Amount : this_command.Amount * -1;
+                            iterator++;
+                        }
+                        else if (this_command.Command == "jmp")
+                        {
+                            iterator += this_command.PlusOrMinus == true ? this_command.Amount : this_command.Amount * -1;
+                        }
+                        else if (this_command.Command == "nop")
+                        {
+                            iterator++;
+                        }
+                    }
+                }
+            }
+                
+
+            public string Command
+            { get; set; }
+
+            public bool PlusOrMinus
+            { get; set; }
+
+            public int Amount
+            { get; set; }
+
+            public bool Visited
+            { get; set; }
+
+            public int Index
+            { get; set; }
         }
 
         public static void DaySeven(bool Debug)
