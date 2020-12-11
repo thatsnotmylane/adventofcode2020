@@ -14,7 +14,7 @@ namespace adventofcode
             Console.WriteLine("Hello Advent of Code");
             
             var debug = true;
-            DayNine(debug);
+            DayTen(debug);
 
             var cki = new ConsoleKeyInfo();
 
@@ -33,7 +33,8 @@ namespace adventofcode
                         Console.WriteLine(debug == true ? "Debug On" : "Debug Off");
                         break;
                     case "1":
-                        DayOne();
+                            DayTen(debug);
+                            DayOne();
                         break;
                     case "2":
                         DayTwo(debug);
@@ -70,6 +71,143 @@ namespace adventofcode
                 }
             }
             while (cki.Key != ConsoleKey.Q);
+        }
+
+        public static void DayTen(bool Debug)
+        {
+            Console.WriteLine();
+            Console.WriteLine("-1-2-3-4- Day Ten -4-3-2-1-");
+            Console.WriteLine();
+            var path_10 = @"C:\Users\thats\source\repos\adventofcode2020\day10input.txt";
+            //var path_10 = @"C:\Users\thats\source\repos\adventofcode2020\day10input-part1test.txt";
+            //var path_10 = @"C:\Users\thats\source\repos\adventofcode2020\day10input-part1test2.txt";
+
+            var jolts = new List<int>();
+
+            foreach(var line in File.ReadAllLines(path_10))
+            {
+                int.TryParse(line, out var value);
+                jolts.Add(value);
+            }
+
+            var one_diff_count = 0;
+            var three_diff_count = 1; // Finally, your device's built-in adapter is always 3 higher than the highest adapter, so its rating is 22 jolts (always a difference of 3).
+            var prev_jotage = 0;
+            foreach (var adapter in jolts.OrderBy(x => x))
+            {
+                var diff = adapter - prev_jotage;
+                if(diff == 1)
+                {
+                    one_diff_count++;
+                }
+                if(diff > 1 && diff < 4)
+                {
+                    three_diff_count++;
+                }
+                else
+                {
+                    
+                }
+                prev_jotage = adapter;
+            }
+
+            var device_joltage = prev_jotage + 3;
+
+            Console.WriteLine($"One Diffs: {one_diff_count} Three Diffs: {three_diff_count}"); // 1885
+            Console.WriteLine($"Part One Answer - {one_diff_count * three_diff_count}");
+
+
+            //var all_combos = GetAllCombos<int>(jolts);
+            //Int64 part_two_count = 0;
+            //foreach(var list in all_combos)
+            //{
+            //    part_two_count += TestList(list, device_joltage);
+            //}
+
+            var part_two = jolts.OrderByDescending(x => x).ToList();
+            part_two.Add(0);
+
+            var branch_counts = new Dictionary<Int64, Int64>();
+            branch_counts[part_two[0]] = 1;
+
+            foreach(var pt2 in part_two.Where(x => x != part_two.First()))
+            {
+                branch_counts[pt2] = 0;
+                if(branch_counts.Select(x => x.Key).Contains( pt2 + 1))
+                {
+                    branch_counts[pt2] = branch_counts[pt2] + branch_counts[pt2 + 1];
+                }
+                if (branch_counts.Select(x => x.Key).Contains(pt2 + 2))
+                {
+                    branch_counts[pt2] = branch_counts[pt2] + branch_counts[pt2 + 2];
+                }
+                if (branch_counts.Select(x => x.Key).Contains(pt2 + 3))
+                {
+                    branch_counts[pt2] = branch_counts[pt2] + branch_counts[pt2 + 3];
+                }
+            }
+
+                 
+
+            Console.WriteLine($"Part Two Answer - {branch_counts[0]}");
+
+        }
+
+        public static List<List<T>> GetAllCombos<T>(List<T> list)
+        {
+            UInt64 comboCount = (UInt64)Math.Pow(2, list.Count) - 1;
+            List<List<T>> result = new List<List<T>>();
+            for (uint i = 1; i < comboCount + 1; i++)
+            {
+                // make each combo here
+                result.Add(new List<T>());
+                for (int j = 0; j < list.Count; j++)
+                {
+                    if ((i >> j) % 2 != 0)
+                        result.Last().Add(list[j]);
+                }
+            }
+            return result;
+        }
+
+        public static int TestList(List<int> jolts, int DeviceJoltage)
+        {
+            var one_diff_count = 0;
+            var three_diff_count = 1; // Finally, your device's built-in adapter is always 3 higher than the highest adapter, so its rating is 22 jolts (always a difference of 3).
+            var prev_jotage = 0;
+            foreach (var adapter in jolts.OrderBy(x => x))
+            {
+                var diff = adapter - prev_jotage;
+                if (diff == 1)
+                {
+                    one_diff_count++;
+                }
+                else if (diff > 1 && diff < 4)
+                {
+                    three_diff_count++;
+                }
+                else
+                {
+                    return 0;
+                }
+                prev_jotage = adapter;
+            }
+
+            var last_diff = DeviceJoltage - prev_jotage;
+            if (last_diff == 1)
+            {
+                one_diff_count++;
+            }
+            else if (last_diff > 1 && last_diff < 4)
+            {
+                three_diff_count++;
+            }
+            else
+            {
+                return 0;
+            }
+
+            return 1;
         }
 
         public static void DayNine(bool Debug)
